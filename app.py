@@ -4,13 +4,29 @@ import tensorflow as tf
 import pickle
 
 # Memuat model dan encoder
-model = tf.keras.models.load_model("mental_disorder_model.h5")
+model = tf.keras.models.load_model("mental_disorder_model.keras")
 
 # Memuat scaler dan label encoder
 with open("scaler.pkl", "rb") as scaler_file:
     scaler = pickle.load(scaler_file)
 with open("label_encoder.pkl", "rb") as le_file:
     label_encoder = pickle.load(le_file)
+
+# Mapping label ke Bahasa Indonesia
+label_mapping = {
+    'MDD': 'Gangguan Depresi Mayor (MDD)',  # Mapping ke Bahasa Indonesia
+    'ASD': 'Gangguan Spektrum Autisme (ASD)',
+    'Loneliness': 'Kesepian',
+    'bipolar': 'Gangguan Bipolar',
+    'anexiety': 'Gangguan Kecemasan',
+    'PTSD': 'Gangguan Stres Pascatrauma (PTSD)',
+    'sleeping disorder': 'Gangguan Tidur',
+    'psychotic deprission': 'Depresi Psikotik',
+    'eating disorder': 'Gangguan Makan',
+    'ADHD': 'Gangguan Pemusatan Perhatian dan Hiperaktivitas (ADHD)',
+    'PDD': 'Gangguan Perkembangan Pervasif (PDD)',
+    'OCD': 'Gangguan Obsesif-Kompulsif (OCD)',
+}
 
 # Aplikasi Streamlit
 st.title("Prediksi Gangguan Mental")
@@ -41,7 +57,7 @@ popping_up_stressful_memory = st.radio("Apakah sering muncul ingatan yang membua
 having_nightmares = st.radio("Apakah Anda sering mengalami mimpi buruk?", ("Tidak", "Ya"), key="having_nightmares")
 avoids_people_or_activities = st.radio("Apakah Anda menghindari orang atau aktivitas tertentu?", ("Tidak", "Ya"), key="avoids_people_or_activities")
 feeling_negative = st.radio("Apakah Anda sering merasa negatif?", ("Tidak", "Ya"), key="feeling_negative")
-trouble_concentrating = st.radio("Apakah Anda mengalami kesulitan berkonsentrasi?", ("Tidak", "Ya"), key="trouble_concentrating")
+trouble_concentrating = st.radio("Apakah Anda mengalami kesulitan dalam fokus berinteraksi?", ("Tidak", "Ya"), key="trouble_concentrating")
 blaming_yourself = st.radio("Apakah Anda sering menyalahkan diri sendiri?", ("Tidak", "Ya"), key="blaming_yourself")
 hallucinations = st.radio("Apakah Anda mengalami halusinasi?", ("Tidak", "Ya"), key="hallucinations")
 repetitive_behaviour = st.radio("Apakah Anda memiliki perilaku yang repetitif?", ("Tidak", "Ya"), key="repetitive_behaviour")
@@ -71,5 +87,8 @@ if st.button("Submit"):
         prediction = model.predict(user_data_scaled)
         predicted_class = label_encoder.inverse_transform([np.argmax(prediction)])
 
+        # Map ke Bahasa Indonesia
+        predicted_class_in_indonesian = label_mapping.get(predicted_class[0], predicted_class[0])
+
         # Tampilkan hasil prediksi
-        st.write(f"Hasil Prediksi Gangguan: {predicted_class[0]}")
+        st.write(f"Hasil Diagnosa bahwa Anda mengalami {predicted_class_in_indonesian}")
